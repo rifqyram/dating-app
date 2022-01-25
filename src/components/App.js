@@ -7,18 +7,18 @@ import {useState} from "react";
 import Drawer from "./layout/Drawer";
 
 function App() {
-    const [open, setOpen] = useState(false);
+    const [openDrawer, setOpenDrawer] = useState(false);
 
     return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Header open={open} setOpen={setOpen} />
-      <Container>
-        <Router />
-          <Drawer open={open} setOpen={setOpen} />
-      </Container>
-    </ThemeProvider>
-  );
+        <ThemeProvider theme={theme}>
+            <CssBaseline/>
+            <Header openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}/>
+            <Container>
+                <Router/>
+                <Drawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}/>
+            </Container>
+        </ThemeProvider>
+    );
 }
 
 export default App;

@@ -2,28 +2,31 @@ import React from "react";
 import {Box, List, ListItem, ListItemText, SwipeableDrawer} from "@mui/material";
 import {Link} from "react-router-dom";
 
-function Drawer({open, setOpen}) {
+function Drawer({openDrawer, setOpenDrawer}) {
     return (
         <SwipeableDrawer
             anchor='right'
-            open={open}
-            onClose={() => setOpen(false)}
-            onOpen={() => setOpen(true)}
+            open={openDrawer}
+            onClose={() => setOpenDrawer(false)}
+            onOpen={() => setOpenDrawer(true)}
         >
             <Box
                 sx={{width: 250}}
                 role="presentation"
-                onClick={() => setOpen(false)}
-                onKeyDown={() => setOpen(false)}
+                onClick={() => setOpenDrawer(false)}
+                onKeyDown={() => setOpenDrawer(false)}
             >
                 <List>
-                    {[{text: 'About', path: '/about'}, {text: 'Login', path: '/login'}].map((text) => (
-                        <Link style={{textDecoration: 'none', color: 'black'}} to={text.path} key={text.text}>
-                            <ListItem button>
-                                <ListItemText primary={text.text}/>
-                            </ListItem>
-                        </Link>
-                    ))}
+                    <Link style={{textDecoration: 'none', color: 'black'}} to='/login'>
+                        <ListItem button>
+                            <ListItemText primary='Login'/>
+                        </ListItem>
+                    </Link>
+                    <Link style={{textDecoration: 'none', color: 'black'}} to='/about'>
+                        <ListItem button>
+                            <ListItemText primary='About'/>
+                        </ListItem>
+                    </Link>
                 </List>
             </Box>
         </SwipeableDrawer>
