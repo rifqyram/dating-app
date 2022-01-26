@@ -4,7 +4,7 @@ import React from "react";
 
 export default function NavButton({text, path}) {
     return (
-        <Link to={`/${path}`} style={{color: "white", textDecoration: "none"}}>
+        <Link to={`/${path}`} style={{color: "inherit", textDecoration: "none"}}>
             <Button variant="inherit">{text}</Button>
         </Link>
     )
