@@ -9,7 +9,7 @@ const theme = createTheme({
             "900": '#ad003b'
         },
         secondary: {
-            main: '#ff6363',
+            main: '#ffffff',
             "400": '#ff9691',
             "900": '#c62e39'
         },

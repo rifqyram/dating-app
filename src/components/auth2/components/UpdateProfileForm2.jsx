@@ -9,16 +9,20 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import {DesktopDatePicker, LocalizationProvider} from "@mui/lab";
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import styled from "@emotion/styled";
+import './profile.css';
 import {useState} from "react";
-import {dateFormat} from "../../../shared/date-format";
-import {updateUserProfile} from "../services/AuthService";
-import Header from "../../../shared/header/Header";
 import {PhotoCamera} from "@mui/icons-material";
+import Header from "../../../shared/header/Header";
+import {DesktopDatePicker, LocalizationProvider} from "@mui/lab";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import Footer from "../../../shared/footer/Footer";
 
-function UpdateProfileForm() {
+const Input = styled('input')({
+    display: 'none',
+});
+
+function UpdateProfileForm2() {
     const [memberId, setMemberId] = useState('');
     const [fullName, setFullName] = useState('');
     const [mobilePhone, setMobilePhone] = useState('');
@@ -31,48 +35,33 @@ function UpdateProfileForm() {
     const [instagram, setInstagram] = useState('');
     const [twitter, setTwitter] = useState('');
 
-    function handleOnSubmit(e) {
-        e.preventDefault();
-
-        const data = {
-            memberId: memberId,
-            name: fullName,
-            bod: dateFormat(dob),
-            gender: gender,
-            selfDescription: biodata,
-            instagram: instagram,
-            twitter: twitter,
-            mobilePhone: mobilePhone,
-            address: address,
-            city: city,
-            postalCode: postalCode
-        }
-
-        updateUserProfile(data)
-            .then(r => {
-                console.log(r)
-            })
-            .catch(err => console.log(err));
-    }
-
-
     return (
         <>
             <Header/>
             <Grid width='90%' minHeight='90vh' mx='auto'>
-                <Typography variant='h4' my={4} color='primary'>Update Profile Kamu</Typography>
+            <Typography variant='h4' my={4} color='primary'>Update Profile Kamu</Typography>
                 <Grid container justifyContent='space-between' component='form'>
-                    <Grid container item md={2} xs={12} display='flex' alignItems='center' direction='column'>
+                    <Grid item md={2} xs={12} display='flex' alignItems='center' direction='column'>
                         <img width='300' height='300' style={{borderRadius: '50%', objectFit: 'cover'}}
                              src='https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80'
                              aria-hidden alt=''/>
-                        <Button variant='contained' sx={{mt: 1}}>
+                        <Button variant='contained' size='large' sx={{mt: 1}}>
                             <PhotoCamera sx={{mr: 1}}/>
                             Choose Photo
                         </Button>
                     </Grid>
                     <Grid item md={5} xs={12}>
                         <Typography variant='h6' color='primary'>Data Pribadi</Typography>
+                        <FormControl sx={{display: 'none'}} margin='dense' fullWidth autoComplete='off' required>
+                            <TextField
+                                label="Member Id"
+                                variant='outlined'
+                                size='small'
+                                disabled
+                                value={memberId}
+                                onChange={(e) => setMemberId(e.target.value)}
+                            />
+                        </FormControl>
                         <FormControl margin='dense' fullWidth autoComplete='off' required>
                             <TextField
                                 label="Nama Lengkap"
@@ -172,4 +161,4 @@ function UpdateProfileForm() {
     )
 }
 
-export default UpdateProfileForm;
+export default UpdateProfileForm2;

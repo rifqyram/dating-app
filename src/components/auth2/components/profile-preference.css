@@ -1,0 +1,21 @@
+.row {
+    width: 90%;
+    margin: 0 auto;
+}
+
+.row .col-4 {
+    width: 50%;
+}
+
+.row .col-4 img {
+    width: 100%;
+    object-fit: contain;
+}
+
+.row .col-8 {
+    width: 50%;
+}
+.input-age-interest {
+    display: flex;
+
+}

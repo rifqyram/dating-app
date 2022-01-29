@@ -8,6 +8,8 @@ import {getProfileAfterUpdate, getUserFromLocalStorage} from "../components/auth
 import {useNavigate} from "react-router";
 import PreferenceForm from "../components/auth/components/PreferenceForm";
 import CardPartner from "../components/partner/components/CardPartner";
+import UpdateProfileForm2 from "../components/auth2/components/UpdateProfileForm2";
+import ProfilePreferenceForm2 from "../components/auth2/components/ProfilePreferenceForm2";
 
 function Router({openDrawer, setOpenDrawer}) {
     const [user, setUser] = useState(null);
@@ -47,11 +49,10 @@ function Router({openDrawer, setOpenDrawer}) {
                     setOpenDrawer={setOpenDrawer}
                     user={user}
                     setUser={setUser}/>}/>
-            <Route path="/login" element={user ? <Navigate to='/'/> : <LoginForm/>}/>
-            <Route path="/register" element={user ? <Navigate to='/'/> : <RegisterForm/>}/>
-            <Route path='/dashboard' element={<CardPartner />} />
-            <Route path="/profile-preference" element={<PreferenceForm/>} />
+            <Route path='/dashboard' element={<CardPartner/>}/>
+            <Route path="/profile-preference" element={<PreferenceForm/>}/>
             <Route path='/profile-update' element={<UpdateProfileForm/>}/>
+            <Route path='/list-match' element={<div>cie</div>}/>
         </Routes>
     </>;
 }

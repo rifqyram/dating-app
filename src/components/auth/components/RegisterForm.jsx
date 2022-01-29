@@ -79,67 +79,51 @@ function RegisterForm() {
 
     return (
         <>
-            <Header />
-            <Container>
-                <Grid container height='50vh' justifyContent='center' alignItems='center'>
-                    <Grid item
-                          onSubmit={handleOnSubmit}
-                          md={6}
-                          component='form'
-                          autoComplete='off'>
-                        <Typography textAlign='center' my={2} variant='h4' color='primary'>
-                            Create New Account
-                        </Typography>
-                        <FormControl fullWidth margin='dense'>
-                            <TextField
-                                label="Email"
-                                variant='outlined'
-                                size='small'
-                                error={email.error}
-                                helperText={email.errorMessage}
-                                onChange={(e) => setEmail({...email, value: e.target.value})}
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position='end'>
-                                            <AccountCircleRounded/>
-                                        </InputAdornment>
-                                    )
-                                }}
-                            />
-                        </FormControl>
-                        <FormControl fullWidth margin='dense'>
-                            <TextField
-                                label="Password"
-                                variant='outlined'
-                                size='small'
-                                type='password'
-                                error={password.error}
-                                helperText={password.errorMessage}
-                                onChange={(e) => setPassword({...password, value: e.target.value})}
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position='end'>
-                                            <PasswordRounded/>
-                                        </InputAdornment>
-                                    )
-                                }}
-                            />
-                        </FormControl>
-                        {loading && <LoadingButton fullWidth loading variant='contained'
-                                                   sx={{my: 2, borderRadius: 2}}>Submit</LoadingButton>}
-                        {!loading &&
-                            <Button fullWidth variant='contained' type='submit' sx={{my: 2, borderRadius: 2}}>Create new
-                                account</Button>} <Typography variant='p' sx={{my: '1em',}}>
-                        Already have an account?
-                        <Link to='/login'>
-                            <Typography ml={1} color='primary' sx={{textDecoration: 'underline'}} variant='span'>
-                                Login
-                            </Typography>
-                        </Link>
-                    </Typography>
-                    </Grid>
-                </Grid>
-            </Container>
+            <Grid container
+                  onSubmit={handleOnSubmit}
+                  component='form'
+                  autoComplete='off'>
+                <FormControl fullWidth margin='dense'>
+                    <TextField
+                        label="Email"
+                        variant='outlined'
+                        size='small'
+                        error={email.error}
+                        helperText={email.errorMessage}
+                        onChange={(e) => setEmail({...email, value: e.target.value})}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <AccountCircleRounded/>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </FormControl>
+                <FormControl fullWidth margin='dense'>
+                    <TextField
+                        label="Password"
+                        variant='outlined'
+                        size='small'
+                        type='password'
+                        error={password.error}
+                        helperText={password.errorMessage}
+                        onChange={(e) => setPassword({...password, value: e.target.value})}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <PasswordRounded/>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </FormControl>
+                {loading && <LoadingButton fullWidth loading variant='contained'
+                                           sx={{my: 2, borderRadius: 2}}>Submit</LoadingButton>}
+                {!loading &&
+                    <Button fullWidth variant='contained' type='submit' sx={{my: 2, borderRadius: 2}}>Create new
+                        account</Button>}
+            </Grid>
         </>
     )
 }

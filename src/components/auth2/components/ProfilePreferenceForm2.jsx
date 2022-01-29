@@ -1,28 +1,28 @@
+import './profile-preference.css';
+import imageForm from '../../../assets/image/image-interest-form.jpg';
 import Header from "../../../shared/header/Header";
 import {
     Button,
     Checkbox,
-    Container,
     FormControl,
     FormControlLabel,
     FormLabel,
     Grid,
-    InputLabel,
     Radio,
     RadioGroup,
-    TextField, Typography
+    TextField,
+    Typography
 } from "@mui/material";
-import {createPreference, getListInterest, getUserFromLocalStorage} from "../services/AuthService";
-import {useEffect, useState} from "react";
-import imageForm from "../../../assets/image/image-interest-form.jpg";
+import {useState} from "react";
+import {getListInterest} from "../../auth/services/AuthService";
 import Footer from "../../../shared/footer/Footer";
 
-function PreferenceForm() {
+function ProfilePreferenceForm2() {
     const [memberId, setMemberId] = useState('');
     const [genderInterest, setGenderInterest] = useState('M');
     const [domicileInterest, setDomicileInterest] = useState('');
-    const [startAgeInterest, setStartAgeInterest] = useState('');
-    const [endAgeInterest, setEndAgeInterest] = useState('');
+    const [startAgeInterest, setStartAgeInterest] = useState(17);
+    const [endAgeInterest, setEndAgeInterest] = useState(18);
     const [interest, setInterest] = useState([]);
     const [interestData, setInterestData] = useState([]);
 
@@ -35,34 +35,7 @@ function PreferenceForm() {
         setInterest(newArray);
     }
 
-    function handleSubmit(e) {
-        e.preventDefault();
-
-        const data = {
-            memberId: memberId,
-            genderInterest: genderInterest,
-            domicileInterest: domicileInterest,
-            startAgeInterest: parseInt(startAgeInterest),
-            endAgeInterest: parseInt(endAgeInterest),
-            interests: interest
-        }
-
-        createPreference(data)
-            .then((r) => {
-                console.log(r)
-            })
-            .catch((err) => {
-                console.log(err.response);
-            })
-    }
-
-    useEffect(() => {
-        if (getUserFromLocalStorage() !== null) {
-            setMemberId(getUserFromLocalStorage().memberId);
-        }
-    }, []);
-
-    useEffect(() => {
+    useState(() => {
         setInterestData(getListInterest());
     }, [])
 
@@ -144,7 +117,7 @@ function PreferenceForm() {
             </Grid>
             <Footer/>
         </>
-    )
+    );
 }
 
-export default PreferenceForm;
+export default ProfilePreferenceForm2;

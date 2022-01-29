@@ -1,12 +1,15 @@
 import client from "../../../api/client";
 
-export const findPartner = async (id, size, page) => {
-    const {data} = await client.get(`/partner/view?id=${id}&pageSize=${size}&pageNo=${page}`);
+export const findPartner = async (id, page) => {
+    const {data} = await client.get(`/partner/view?id=${id}&pageSize=${page}&pageNo=1`);
     return data;
 }
 
-export const matchPartner = async (req) => {
-    const {data} = await client.post("/partner/match", req);
+export const matchPartner = async (memberId, partnerId) => {
+    const {data} = await client.post("/partner/match", {
+        memberId: memberId,
+        partnerId: partnerId
+    });
     return data;
 }
 
