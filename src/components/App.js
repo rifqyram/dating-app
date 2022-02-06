@@ -4,16 +4,18 @@ import Router from "../router/router";
 import theme from "../utils/theme";
 import {useState} from "react";
 import Drawer from "./layout/Drawer";
+import {AuthProvider} from "./auth/reducers/AuthContext";
 
 function App() {
     const [openDrawer, setOpenDrawer] = useState(false);
-
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline/>
-            <Router/>
-            <Drawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}/>
-        </ThemeProvider>
+        <AuthProvider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline/>
+                <Router/>
+                <Drawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}/>
+            </ThemeProvider>
+        </AuthProvider>
     );
 }
 

@@ -1,58 +1,30 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext} from 'react';
 import Home from '../components/layout/Home';
-import LoginForm from "../components/auth/components/LoginForm";
-import RegisterForm from "../components/auth/components/RegisterForm";
-import {Route, Routes, Navigate} from "react-router-dom";
+import {Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import UpdateProfileForm from "../components/auth/components/UpdateProfileForm";
-import {getProfileAfterUpdate, getUserFromLocalStorage} from "../components/auth/services/AuthService";
-import {useNavigate} from "react-router";
+import {getUserFromLocalStorage} from "../components/auth/services/AuthService";
 import PreferenceForm from "../components/auth/components/PreferenceForm";
-import CardPartner from "../components/partner/components/CardPartner";
-import UpdateProfileForm2 from "../components/auth2/components/UpdateProfileForm2";
-import ProfilePreferenceForm2 from "../components/auth2/components/ProfilePreferenceForm2";
+import FindPartner from "../components/partner/components/FindPartner";
+import RESPONSE_MESSAGE from "../constant/response-message";
+import ListPartner from "../components/partner/components/ListPartner";
+import {AuthContext} from "../components/auth/reducers/AuthContext";
 
-function Router({openDrawer, setOpenDrawer}) {
-    const [user, setUser] = useState(null);
-    const [error, setError] = useState(false);
-    const navigate = useNavigate();
-
-    function getCurrentProfile(memberId) {
-        getProfileAfterUpdate(memberId)
-            .then(r => {
-                console.log()
-            })
-            .catch(({response: err}) => {
-                if (err.status === 500) {
-                    setError(true);
-                    navigate("/profile-update")
-                }
-            });
-    }
-
-    useEffect(() => {
-        if (getUserFromLocalStorage() !== null) {
-            setUser(getUserFromLocalStorage())
-        }
-    }, [])
-
-    useEffect(() => {
-        if (getUserFromLocalStorage()?.memberId) {
-            getCurrentProfile(getUserFromLocalStorage().memberId)
-        }
-    }, [])
+function Router() {
+    const {message, user} = useContext(AuthContext);
+    const userLocal = getUserFromLocalStorage();
 
     return <>
         <Routes>
             <Route path="/" element={
-                <Home
-                    openDrawer={openDrawer}
-                    setOpenDrawer={setOpenDrawer}
-                    user={user}
-                    setUser={setUser}/>}/>
-            <Route path='/dashboard' element={<CardPartner/>}/>
-            <Route path="/profile-preference" element={<PreferenceForm/>}/>
-            <Route path='/profile-update' element={<UpdateProfileForm/>}/>
-            <Route path='/list-match' element={<div>cie</div>}/>
+                message === RESPONSE_MESSAGE.GET_PROFILE_FAILED ?
+                    <Navigate to='/profile-update'/> : user && userLocal ? <Navigate to='/find'/> : <Home/>}/>
+            <Route path='/find' element={message === RESPONSE_MESSAGE.GET_PROFILE_FAILED ?
+                <Navigate to='/profile-update'/> : user && userLocal ? <FindPartner/> : <Navigate to='/'/>}/>
+            <Route path="/profile-preference" element={message === RESPONSE_MESSAGE.GET_PROFILE_FAILED ?
+                <Navigate to='/profile-update'/> : <PreferenceForm/>}/>
+            <Route path='/profile-update' element={user && userLocal ? <UpdateProfileForm/> : <Navigate to='/'/>}/>
+            <Route path='/list-match' element={message === RESPONSE_MESSAGE.GET_PROFILE_FAILED ?
+                <Navigate to='/profile-update'/> : <ListPartner/>}/>
         </Routes>
     </>;
 }

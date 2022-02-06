@@ -1,7 +1,7 @@
 import client from "../../../api/client";
 
 export const findPartner = async (id, page) => {
-    const {data} = await client.get(`/partner/view?id=${id}&pageSize=${page}&pageNo=1`);
+    const {data} = await client.get(`/partner/view?id=${id}&pageNo=${page}`);
     return data;
 }
 

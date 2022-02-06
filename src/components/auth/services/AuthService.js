@@ -15,34 +15,31 @@ export const updateUserProfile = async (userData) => {
     return data;
 }
 
-export const getProfileAfterUpdate = async (id) => {
+export const getProfile = async (id) => {
     const {data} = await client.get(`/member/profile?id=${id}`)
     return data;
 }
 
-export const getListInterest = () => {
-    return [
-        {
-            interest_id: 'a8127c2f-f878-40ab-8903-917954ab814z',
-            interest: 'Coffee',
-        },
-        {
-            interest_id: 'b9127c2f-f878-40ab-8903-917954ab814x',
-            interest: 'Live Music',
-        },
-        {
-            interest_id: 'c1027c2f-f878-40ab-8903-917954ab814y',
-            interest: 'Dog',
-        },
-        {
-            interest_id: 'd1127c2f-f878-40ab-8903-917954ab814z',
-            interest: 'Gym',
-        },
-        {
-            interest_id: 'e1227c2f-f878-40ab-8903-917954ab814w',
-            interest: 'Beer',
+export const userActivation = async (id) => {
+    const {data} = await client.get(`/member/activation?id=${id}`)
+    return data;
+}
+
+export const uploadAvatar = async (id, image) => {
+    let formData = new FormData();
+    formData.append('profile', image)
+
+    const {data} = await client.post(`/member/profile?id=${id}`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
         }
-    ];
+    })
+    return data;
+}
+
+export const getListInterest = async () => {
+    const {data} = await client.get("/interest")
+    return data;
 }
 
 export const createPreference = async (dataUser) => {
@@ -66,8 +63,4 @@ export const getUserFromLocalStorage = () => {
     } else {
         return null;
     }
-}
-
-export const authLogout = () => {
-    localStorage.removeItem("user");
 }

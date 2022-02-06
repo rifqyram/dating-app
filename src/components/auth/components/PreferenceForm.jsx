@@ -4,7 +4,7 @@ import {
     Checkbox,
     Container,
     FormControl,
-    FormControlLabel,
+    FormControlLabel, FormHelperText,
     FormLabel,
     Grid,
     InputLabel,
@@ -16,54 +16,146 @@ import {createPreference, getListInterest, getUserFromLocalStorage} from "../ser
 import {useEffect, useState} from "react";
 import imageForm from "../../../assets/image/image-interest-form.jpg";
 import Footer from "../../../shared/footer/Footer";
+import {useNavigate} from "react-router";
+import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
 
 function PreferenceForm() {
-    const [memberId, setMemberId] = useState('');
-    const [genderInterest, setGenderInterest] = useState('M');
-    const [domicileInterest, setDomicileInterest] = useState('');
-    const [startAgeInterest, setStartAgeInterest] = useState('');
-    const [endAgeInterest, setEndAgeInterest] = useState('');
-    const [interest, setInterest] = useState([]);
+    // const [memberId, setMemberId] = useState('');
+    // const [genderInterest, setGenderInterest] = useState('M');
+    // const [domicileInterest, setDomicileInterest] = useState('');
+    // const [startAgeInterest, setStartAgeInterest] = useState('');
+    // const [endAgeInterest, setEndAgeInterest] = useState('');
+    // const [interest, setInterest] = useState([]);
+    const [formValue, setFormValue] = useState({
+        memberId: '',
+        genderInterest: 'M',
+        domicileInterest: '',
+        startAgeInterest: '',
+        endAgeInterest: '',
+        interests: []
+    });
+    const [error, setError] = useState(null);
     const [interestData, setInterestData] = useState([]);
+    const navigate = useNavigate();
 
-    function handleChangeInterest(e) {
-        let newArray = [...interest, {interestId: e.target.id}]
-        if (interest.includes(e.target.name)) {
-            newArray = newArray.filter((data) => data.interest !== e.target.name);
+    const handleChangeInterest = (e) => {
+        setError({...error, interests: ''})
+
+        let newArray = [...formValue.interests, {interestId: e.target.id}]
+        const find = formValue.interests.find(element => e.target.id === element.interestId);
+
+        if (find) {
+            newArray = newArray.filter((data) => data.interestId !== e.target.id);
         }
 
-        setInterest(newArray);
+        if (newArray.length === 0) {
+            setError({...error, interests: 'Pilih minimal 1'})
+        }
+
+        setFormValue({...formValue, interests: newArray});
+    }
+    const validationOnSubmit = () => {
+        let errors = {
+            domisileInterest: '',
+            startAgeInterest: '',
+            endAgeInterest: '',
+            interests: ''
+        };
+        let valid = true;
+
+        if (!formValue.domicileInterest) {
+            valid = false;
+            errors.domisileInterest = 'Domisili tidak boleh kosong'
+        }
+
+        if (!formValue.startAgeInterest) {
+            valid = false;
+            errors.startAgeInterest = 'Range Umur tidak boleh kosong'
+        }
+
+        if (!formValue.endAgeInterest) {
+            valid = false;
+            errors.endAgeInterest = 'Range Umur tidak boleh kosong'
+        }
+
+        if (formValue.interests.length === 0) {
+            valid = false;
+            errors.interests = 'Pilih minimal 1'
+        }
+
+        setError({...errors});
+        return valid;
+    }
+
+    const formValidation = (name, value) => {
+        let valid = true;
+        let message;
+
+        if (!value) {
+            valid = false;
+            message = `${name} tidak boleh kosong`;
+        }
+
+        return [valid, message];
+    }
+
+    const handleOnBlur = (e) => {
+        const {target: {name, value}} = e
+        const [valid, message] = formValidation(name, value);
+
+        if (!valid) {
+            setError({...error, [name]: message});
+        }
+
+    }
+
+    const handleOnChange = (e) => {
+        const {target: {name, value}} = e;
+        setFormValue({...formValue, [name]: value});
+        const [valid, message] = formValidation(name, value);
+
+        if (!valid) {
+            setError({...error, [name]: message})
+        }
     }
 
     function handleSubmit(e) {
         e.preventDefault();
+        validationOnSubmit();
 
-        const data = {
-            memberId: memberId,
-            genderInterest: genderInterest,
-            domicileInterest: domicileInterest,
-            startAgeInterest: parseInt(startAgeInterest),
-            endAgeInterest: parseInt(endAgeInterest),
-            interests: interest
+        if (validationOnSubmit()) {
+            const data = {
+                memberId: formValue.memberId,
+                genderInterest: formValue.genderInterest,
+                domicileInterest: formValue.domicileInterest,
+                startAgeInterest: parseInt(formValue.startAgeInterest),
+                endAgeInterest: parseInt(formValue.endAgeInterest),
+                interests: formValue.interests
+            }
+
+            createPreference(data)
+                .then((r) => {
+                    successAlert('Success Update Preference', r.message);
+                    navigate('/find');
+                })
+                .catch((err) => {
+                    errorAlert(err.response.data.ErrorDescription.message);
+                })
         }
 
-        createPreference(data)
-            .then((r) => {
-                console.log(r)
-            })
-            .catch((err) => {
-                console.log(err.response);
-            })
     }
 
     useEffect(() => {
         if (getUserFromLocalStorage() !== null) {
-            setMemberId(getUserFromLocalStorage().memberId);
+            setFormValue({...formValue, memberId: getUserFromLocalStorage().memberId});
         }
     }, []);
 
     useEffect(() => {
-        setInterestData(getListInterest());
+        getListInterest()
+            .then(r => {
+                setInterestData(r.data)
+            })
     }, [])
 
     return (
@@ -73,16 +165,17 @@ function PreferenceForm() {
                 <Grid item md={8} sx={{display: {xs: 'none', md: 'block'}}}>
                     <img width='100%' src={imageForm} loading="lazy" aria-hidden alt={'image-form'}/>
                 </Grid>
-                <Grid item md={4} xs={12} component='form'>
+                <Grid item md={4} xs={12} component='form' onSubmit={handleSubmit}>
                     <Typography variant='h5' color='primary' textAlign='center'>My Preference</Typography>
                     <FormControl fullWidth margin='dense'>
-                        <FormLabel id="gender-group-button">Gender</FormLabel>
+                        <FormLabel id="genderInterest">Interest to</FormLabel>
                         <RadioGroup
-                            aria-labelledby="gender-group-button"
-                            value={genderInterest}
+                            aria-labelledby="genderInterest"
+                            value={formValue.genderInterest}
+                            onChange={handleOnChange}
+                            onBlur={handleOnBlur}
                             row
-                            onChange={(e) => setGenderInterest(e.target.value)}
-                            name="gender-button-groups">
+                            name="genderInterest">
                             <FormControlLabel
                                 value="M"
                                 control={<Radio size='small'/>}
@@ -94,8 +187,16 @@ function PreferenceForm() {
                         </RadioGroup>
                     </FormControl>
                     <FormControl fullWidth margin='dense'>
-                        <TextField variant='outlined' label='Domisili' size='small'
-                                   onChange={(e) => setDomicileInterest(e.target.value)}/>
+                        <TextField
+                            variant='outlined'
+                            label='Domicile'
+                            name='domicileInterest'
+                            error={Boolean(error?.domisileInterest)}
+                            helperText={error?.domisileInterest ? error?.domisileInterest : 'Domisili untuk pencarian partner anda'}
+                            onChange={handleOnChange}
+                            onBlur={handleOnBlur}
+                            value={formValue.domicileInterest}
+                            size='small'/>
                     </FormControl>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
@@ -104,12 +205,12 @@ function PreferenceForm() {
                                            label='Start Age Interest'
                                            size='small'
                                            type='number'
-                                           value={startAgeInterest}
-                                           helperText='Tertarik pada umur minimal 17 tahun'
-                                           onChange={(e) => {
-                                               const newValue = Math.min(Math.max(e.target.value, 17), 40);
-                                               setStartAgeInterest(newValue)
-                                           }}/>
+                                           name='startAgeInterest'
+                                           error={Boolean(error?.startAgeInterest)}
+                                           helperText={error?.startAgeInterest ? error?.startAgeInterest : 'Tertarik pada umur minimal 17 tahun'}
+                                           value={formValue.startAgeInterest}
+                                           onBlur={handleOnBlur}
+                                           onChange={handleOnChange}/>
                             </FormControl>
                         </Grid>
                         <Grid item xs={6}>
@@ -118,28 +219,30 @@ function PreferenceForm() {
                                            label='End Age Interest'
                                            size='small'
                                            type='number'
-                                           value={endAgeInterest}
-                                           helperText='Tertarik pada umur maksimal 40 tahun'
-                                           onChange={(e) => {
-                                               const newValue = Math.min(Math.max(e.target.value, 17), 40);
-                                               setEndAgeInterest(newValue)
-                                           }}/>
+                                           name='endAgeInterest'
+                                           value={formValue.endAgeInterest}
+                                           onChange={handleOnChange}
+                                           onBlur={handleOnBlur}
+                                           error={Boolean(error?.endAgeInterest)}
+                                           helperText={error?.endAgeInterest ? error?.endAgeInterest : 'Tertarik pada umur maksimal 40 tahun'}/>
                             </FormControl>
                         </Grid>
                     </Grid>
                     <Grid item>
                         {interestData.map(item => {
                             return (
-                                <FormControlLabel sx={{my: 2}} key={item.interest_id} label={item.interest} control={
+                                <FormControlLabel key={item.InterestId} label={item.Interest} control={
                                     <Checkbox
-                                        key={item.interest_id}
+                                        key={item.InterestId}
                                         onChange={handleChangeInterest}
-                                        id={item.interest_id}
-                                        name={item.interest}/>}
+                                        id={item.InterestId}
+                                        name={item.Interest}/>}
                                 />)
                         })}
+                        <FormHelperText
+                            error={Boolean(error?.interests)}>{error?.interests ? error?.interests : 'Pilih Minimal 1 yang merarik untuk anda'}</FormHelperText>
                     </Grid>
-                    <Button variant='contained' size='large' type='onsubmit' fullWidth>Submit</Button>
+                    <Button variant='contained' sx={{my: 2}} size='large' type='onsubmit' fullWidth>Submit</Button>
                 </Grid>
             </Grid>
             <Footer/>
