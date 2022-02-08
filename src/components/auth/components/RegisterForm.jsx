@@ -5,7 +5,7 @@ import {authRegister, userActivation} from "../services/AuthService";
 import {LoadingButton} from "@mui/lab";
 import {validEmail} from "../../../utils/util";
 import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
-import {AuthContext} from "../reducers/AuthContext";
+import {GlobalContext} from "../../../context/GlobalContext";
 
 function RegisterForm({setValue}) {
     const [formValue, setFormValue] = useState({
@@ -13,7 +13,7 @@ function RegisterForm({setValue}) {
         password: ''
     });
     const [error, setError] = useState({});
-    const {register, isLoading} = useContext(AuthContext);
+    const {register, isLoading} = useContext(GlobalContext);
 
     const validationForm = (name, value) => {
         let valid = true;

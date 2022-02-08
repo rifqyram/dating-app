@@ -1,25 +1,28 @@
+import {useContext, useEffect, useState} from "react";
+import {GlobalContext} from "../../../context/GlobalContext";
+
+import {Box, Button, Grid, Typography} from "@mui/material";
+import RESPONSE_MESSAGE from "../../../constant/response-message";
+
+import CardFindPartner from "./CardFindPartner";
 import Header from "../../../shared/header/Header";
-import {Grid, Typography} from "@mui/material";
-import {useEffect, useState} from "react";
+import Footer from "../../../shared/footer/Footer";
 import {findPartner, matchPartner} from "../services/PartnerService";
 import {getUserFromLocalStorage} from "../../auth/services/AuthService";
-import Footer from "../../../shared/footer/Footer";
 import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
-import RESPONSE_MESSAGE from "../../../constant/response-message";
-import CardFindPartner from "./CardFindPartner";
-import {useParams} from "react-router";
-import {Skeleton} from "@mui/lab";
+
+import bgFind from '../../../assets/svg/missing.svg';
+import {useNavigate} from "react-router";
 
 function FindPartner() {
     const [partner, setPartner] = useState(null);
     const [page, setPage] = useState(0);
-    const params = useParams()
+    const {message} = useContext(GlobalContext);
+    const navigate = useNavigate();
 
     const nextPartner = () => {
         setPage(initialValue => initialValue + 1);
     }
-
-    console.log(page)
 
     const handleMatchPartner = (e) => {
         e.preventDefault();
@@ -45,7 +48,6 @@ function FindPartner() {
                 setPartner(r.data);
             })
             .catch(err => {
-                console.log(err.response);
             });
     }
 
@@ -54,21 +56,48 @@ function FindPartner() {
     }, [page])
 
     return (
-        <>
+        <Box>
             <Header/>
-            <Grid container width='90%' mx='auto' minHeight='90vh' mb={4}>
-                <Grid container>
-                    <Typography sx={{my: {xs: 2, md: 4}}} variant='h4' fontWeight='bold' color='rgba(0,0,0,0.6)'>Find your
-                        partner</Typography>
-                    <Grid item container xs={12} justifyContent='center'>
-                        {partner?.map((p, idx) => {
-                            return <CardFindPartner key={idx} data={p} idx={idx} nextPartner={nextPartner} handleMatchPartner={handleMatchPartner} />
-                        })}
-                    </Grid>
-                </Grid>
+            <Grid container width='90%' mx='auto' minHeight='100vh' alignItems='flex-start'>
+                {partner &&
+                    <Grid item container>
+                        <Grid item xs={12}>
+                            <Typography sx={{my: {xs: 2, md: 4}}} textAlign='center' variant='h4' fontWeight='bold'
+                                        color='rgba(0,0,0,0.6)'>
+                                Find your partner
+                            </Typography>
+                        </Grid>
+                        <Grid item container xs={12} justifyContent='center' my={4}>
+                            {partner?.map((p, idx) => {
+                                return <CardFindPartner
+                                    key={idx}
+                                    data={p}
+                                    nextPartner={nextPartner}
+                                    handleMatchPartner={handleMatchPartner}/>
+                            })}
+                        </Grid>
+                    </Grid>}
+                {!partner &&
+                    <Grid item container xs={12} my={4}>
+                        <Grid item container xs={12} mb={4} justifyContent='space-between'>
+                            <Typography variant='h4' color='rgba(0,0,0,0.6)'>
+                                Partner is Missing
+                            </Typography>
+                            <Button sx={{my: {xs: 2, md: 0}}}
+                                    variant='contained'
+                                    onClick={() => navigate('/profile-update')}>
+                                Update your
+                                Profile</Button>
+                        </Grid>
+                        <Grid item container justifyContent='center' mt={3} xs={12}>
+                            <Box sx={{width: {xs: '100%', md: '80%'}}}>
+                                <img src={bgFind} width='100%' aria-hidden alt="bg-find-partner"/>
+                            </Box>
+                        </Grid>
+                    </Grid>}
             </Grid>
             <Footer/>
-        </>
+        </Box>
     )
 }
 

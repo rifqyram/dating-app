@@ -2,20 +2,16 @@ import {ThemeProvider} from "@emotion/react";
 import {CssBaseline} from "@mui/material";
 import Router from "../router/router";
 import theme from "../utils/theme";
-import {useState} from "react";
-import Drawer from "./layout/Drawer";
-import {AuthProvider} from "./auth/reducers/AuthContext";
+import {GlobalProvider} from "../context/GlobalContext";
 
 function App() {
-    const [openDrawer, setOpenDrawer] = useState(false);
     return (
-        <AuthProvider>
+        <GlobalProvider>
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
                 <Router/>
-                <Drawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}/>
             </ThemeProvider>
-        </AuthProvider>
+        </GlobalProvider>
     );
 }
 

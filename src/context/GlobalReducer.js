@@ -1,11 +1,11 @@
-import AUTH_ACTIONS from "./AuthActions";
-import {getUserFromLocalStorage, setUserToLocalStorage} from "../services/AuthService";
+import ACTIONS from "./Actions";
+import {getUserFromLocalStorage, setUserToLocalStorage} from "../components/auth/services/AuthService";
 
-const authReducer = (state, action) => {
+const globalReducer = (state, action) => {
     const {type, payload} = action;
 
     switch (type) {
-        case AUTH_ACTIONS.LOGIN_SUCCESS:
+        case ACTIONS.LOGIN_SUCCESS:
             setUserToLocalStorage(payload.data)
             return {
                 ...state,
@@ -15,31 +15,31 @@ const authReducer = (state, action) => {
                 isLoading: false,
                 message: payload.message
             }
-        case AUTH_ACTIONS.LOGIN_FAILED:
+        case ACTIONS.LOGIN_FAILED:
             return {
                 ...state,
                 isLoading: false,
                 message: payload
             }
-        case AUTH_ACTIONS.REGISTER_SUCCESS:
+        case ACTIONS.REGISTER_SUCCESS:
             return {
                 ...state,
                 isLoading: false,
                 message: payload
             }
-        case AUTH_ACTIONS.REGISTER_FAILED:
+        case ACTIONS.REGISTER_FAILED:
             return {
                 ...state,
                 isLoading: false,
                 message: payload
             }
-        case AUTH_ACTIONS.LOGOUT:
+        case ACTIONS.LOGOUT:
             return {
                 ...state,
                 user: null,
                 isLoading: false
             }
-        case AUTH_ACTIONS.FETCH_USER_COMPLETE:
+        case ACTIONS.FETCH_USER_COMPLETE:
             return {
                 ...state,
                 user: {
@@ -50,30 +50,30 @@ const authReducer = (state, action) => {
                 message: payload.data.message,
                 isLoading: false
             }
-        case AUTH_ACTIONS.FETCH_USER_FAILED:
+        case ACTIONS.FETCH_USER_FAILED:
             return {
                 ...state,
                 message: payload,
                 isLoading: false
             }
-        case AUTH_ACTIONS.SET_LOADING:
+        case ACTIONS.SET_LOADING:
             return {
                 ...state,
                 isLoading: true
             }
-        case AUTH_ACTIONS.NEXT_PAGE:
+        case ACTIONS.NEXT_PAGE:
             return {
                 ...state,
                 isLoading: false,
                 page: payload,
             }
-        case AUTH_ACTIONS.FETCH_LIST_PARTNER_COMPLETE:
+        case ACTIONS.FETCH_LIST_PARTNER_COMPLETE:
             return {
                 ...state,
                 isLoading: false,
-                partners: [...payload]
+                partners: payload
             }
-        case AUTH_ACTIONS.FETCH_LIST_PARTNER_FAILED:
+        case ACTIONS.FETCH_LIST_PARTNER_FAILED:
             return {
                 ...state,
                 isLoading: false
@@ -83,4 +83,4 @@ const authReducer = (state, action) => {
     }
 }
 
-export default authReducer;
+export default globalReducer;

@@ -1,9 +1,9 @@
 import {createContext, useReducer} from "react";
-import authReducer from "./AuthReducer";
-import {authLogin, authRegister, getProfile, getUserFromLocalStorage, userActivation} from "../services/AuthService";
-import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
-import AUTH_ACTIONS from "./AuthActions";
-import {listChoosenPartner} from "../../partner/services/PartnerService";
+import globalReducer from "./GlobalReducer";
+import {authLogin, authRegister, getProfile, getUserFromLocalStorage, userActivation} from "../components/auth/services/AuthService";
+import {errorAlert, successAlert} from "../shared/notification/SweetAlert";
+import ACTIONS from "./Actions";
+import {listChoosenPartner} from "../components/partner/services/PartnerService";
 
 const initialState = {
     user: {
@@ -16,20 +16,20 @@ const initialState = {
     message: ''
 }
 
-export const AuthContext = createContext(initialState);
+export const GlobalContext = createContext(initialState);
 
-export const AuthProvider = ({children}) => {
-    const [state, dispatch] = useReducer(authReducer, initialState);
+export const GlobalProvider = ({children}) => {
+    const [state, dispatch] = useReducer(globalReducer, initialState);
 
     const register = (data, setValue) => {
-        dispatch({type: AUTH_ACTIONS.SET_LOADING});
+        dispatch({type: ACTIONS.SET_LOADING});
 
         authRegister(data)
             .then(res => {
                 userActivation(res.data.memberId)
                     .then(r => {
                         dispatch({
-                            type: AUTH_ACTIONS.REGISTER_SUCCESS,
+                            type: ACTIONS.REGISTER_SUCCESS,
                             payload: r.message
                         });
                         successAlert("Registration success", "Member activation success")
@@ -37,14 +37,14 @@ export const AuthProvider = ({children}) => {
                     })
                     .catch(err => {
                         dispatch({
-                            type: AUTH_ACTIONS.REGISTER_FAILED,
+                            type: ACTIONS.REGISTER_FAILED,
                             payload: err.response.data.ErrorDescription.message
                         });
                         errorAlert(err);
                     })
             })
             .catch(err => {
-                dispatch({type: AUTH_ACTIONS.REGISTER_FAILED})
+                dispatch({type: ACTIONS.REGISTER_FAILED})
                 if (err.response.status === 500) {
                     errorAlert('Server dalam kendala, silakan hubungi admin');
                 } else {
@@ -54,7 +54,7 @@ export const AuthProvider = ({children}) => {
     }
 
     const login = ({userName, password}, navigate) => {
-        dispatch({type: AUTH_ACTIONS.SET_LOADING})
+        dispatch({type: ACTIONS.SET_LOADING})
 
         authLogin({
             userName,
@@ -63,7 +63,7 @@ export const AuthProvider = ({children}) => {
             .then(r => {
                 successAlert(r.message).then(() => {
                     dispatch({
-                        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+                        type: ACTIONS.LOGIN_SUCCESS,
                         payload: r
                     });
                     navigate('/find')
@@ -72,15 +72,14 @@ export const AuthProvider = ({children}) => {
             .catch((err) => {
                 errorAlert(err);
                 dispatch({
-                    type: AUTH_ACTIONS.LOGIN_FAILED,
+                    type: ACTIONS.LOGIN_FAILED,
                     payload: err.response.data.ErrorDescription.message
                 });
             })
     }
 
     const fetchUser = (id) => {
-        dispatch({type: AUTH_ACTIONS.SET_LOADING});
-
+        dispatch({type: ACTIONS.SET_LOADING});
         getProfile(id)
             .then(r => {
                 const data = {
@@ -88,48 +87,59 @@ export const AuthProvider = ({children}) => {
                     data: r
                 };
                 dispatch({
-                    type: AUTH_ACTIONS.FETCH_USER_COMPLETE,
+                    type: ACTIONS.FETCH_USER_COMPLETE,
                     payload: data
                 });
             })
             .catch(err => {
-                errorAlert(err);
                 dispatch({
-                    type: AUTH_ACTIONS.FETCH_USER_FAILED,
+                    type: ACTIONS.FETCH_USER_FAILED,
                     payload: err.response.data.ErrorDescription.message
                 });
             })
     }
 
     const logout = () => {
-        dispatch({type: AUTH_ACTIONS.SET_LOADING});
+        dispatch({type: ACTIONS.SET_LOADING});
         if (getUserFromLocalStorage() === null) return;
         localStorage.removeItem("user");
         dispatch({
-            type: AUTH_ACTIONS.LOGOUT
+            type: ACTIONS.LOGOUT
         });
     }
 
-    const fetchListPartner = () => {
-        dispatch({type: AUTH_ACTIONS.SET_LOADING});
-        if (getUserFromLocalStorage() === null) return;
-        listChoosenPartner(getUserFromLocalStorage().memberId)
-            .then()
+    const fetchListPartner = (id) => {
+        dispatch({type: ACTIONS.SET_LOADING});
+        listChoosenPartner(id)
+            .then((r) => {
+                dispatch({
+                    type: ACTIONS.FETCH_LIST_PARTNER_COMPLETE,
+                    payload: r.data
+                });
+            })
+            .catch((err) => {
+                dispatch({
+                    type: ACTIONS.FETCH_LIST_PARTNER_FAILED
+                });
+                errorAlert(err.response.data.ErrorDescription.message);
+            })
     }
 
     return (
-        <AuthContext.Provider
+        <GlobalContext.Provider
             value={{
                 user: state.user,
                 isLoading: state.isLoading,
                 message: state.message,
+                partners: state.partners,
                 register,
                 login,
                 fetchUser,
-                logout
+                logout,
+                fetchListPartner
             }}>
             {children}
-        </AuthContext.Provider>
+        </GlobalContext.Provider>
     )
 }
 

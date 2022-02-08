@@ -4,7 +4,7 @@ import {useContext, useState} from "react";
 import {LoadingButton} from "@mui/lab";
 import {validEmail} from "../../../utils/util";
 import {useNavigate} from "react-router";
-import {AuthContext} from "../reducers/AuthContext";
+import {GlobalContext} from "../../../context/GlobalContext";
 
 function LoginForm({setValue}) {
 
@@ -14,7 +14,7 @@ function LoginForm({setValue}) {
     });
     const [error, setError] = useState({});
     const navigate = useNavigate();
-    const {login, isLoading} = useContext(AuthContext);
+    const {login, isLoading} = useContext(GlobalContext);
 
     const validationForm = (name, value) => {
         let valid = true;

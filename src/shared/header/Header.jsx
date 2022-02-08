@@ -1,43 +1,18 @@
-import {AppBar, Avatar, Badge, Grid, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography} from "@mui/material";
-import {Box} from "@mui/system";
 import React, {useContext, useEffect, useState} from "react";
-import NavButton from "../button-nav/ButtonNav";
 import {useNavigate} from "react-router";
-import {AuthContext} from "../../components/auth/reducers/AuthContext";
-import {getUserFromLocalStorage} from "../../components/auth/services/AuthService";
+import {Box} from "@mui/system";
+import {AppBar, Avatar, Badge, Grid, IconButton, Skeleton, Toolbar, Tooltip, Typography} from "@mui/material";
 import {Notifications} from "@mui/icons-material";
-import {Skeleton} from "@mui/material";
 
-function MenuI({anchorEl, handleClose, handleLogout, navigate}) {
-
-    return (
-        <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-        >
-            <MenuItem onClick={() => {
-                handleClose();
-                navigate('/find')
-            }}>Find Match</MenuItem>
-            <MenuItem onClick={() => {
-                handleClose();
-                navigate('/profile-update')
-            }}>Profile</MenuItem>
-            <MenuItem onClick={() => {
-                handleLogout();
-                handleClose();
-            }}>Logout</MenuItem>
-        </Menu>
-    )
-}
+import {GlobalContext} from "../../context/GlobalContext";
+import {getUserFromLocalStorage} from "../../components/auth/services/AuthService";
+import logoImage from '../../assets/svg/logo.svg';
+import MenuHeader from "../menu-header/MenuHeader";
 
 function Header() {
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);
-    const {logout, user, isLoading, fetchUser} = useContext(AuthContext);
+    const {logout, user, isLoading, fetchUser, partners, fetchListPartner} = useContext(GlobalContext);
     const userLocal = getUserFromLocalStorage();
 
     const handleMenu = (event) => {
@@ -57,21 +32,22 @@ function Header() {
         fetchUser(getUserFromLocalStorage().memberId);
     }, [])
 
+    useEffect(() => {
+        if (getUserFromLocalStorage() === null) return;
+        fetchListPartner(getUserFromLocalStorage().memberId);
+    }, [])
+
     return (
         <AppBar position='static'>
             <Toolbar sx={{width: '90%', mx: 'auto'}}>
                 <Grid container item md={8}>
-                    <Typography variant='h5'>Dating App</Typography>
+                    <Typography variant='h5'><img src={logoImage} aria-hidden alt="logo-image"/> Eniglove</Typography>
                 </Grid>
-                {user && userLocal ?
-                    <Grid container item md={4} columnGap={2}
-                          sx={{
-                              display: {xs: 'flex', md: 'flex'},
-                              justifyContent: {xs: 'space-between', md: 'flex-end'}
-                          }}>
+                {user && userLocal &&
+                    <Grid container item md={4} justifyContent='flex-end'>
                         <Tooltip title='List Match'>
-                            <IconButton color='inherit' onClick={() => navigate('/list-match')}>
-                                <Badge badgeContent={0} color="error">
+                            <IconButton color='inherit' size='large' onClick={() => navigate('/list-match')}>
+                                <Badge badgeContent={partners?.length && partners?.length} color="error">
                                     <Notifications/>
                                 </Badge>
                             </IconButton>
@@ -80,20 +56,16 @@ function Header() {
                             <Skeleton variant="circular" width={40} height={40}/> :
                             <Box>
                                 <Tooltip title='Open Profile'>
-                                    <IconButton onClick={handleMenu}>
-                                        <Avatar alt={user?.userData?.PersonalInfo?.Name}
-                                                src={`data:image;base64,${user?.userData?.PersonalInfo?.RecentPhotoPath}`}/>
+                                    <IconButton size='large' onClick={handleMenu}>
+                                        <Avatar
+                                            alt={user?.userData?.PersonalInfo?.Name}
+                                            src={`data:image;base64,${user?.userData?.PersonalInfo?.RecentPhotoPath}`}/>
                                     </IconButton>
                                 </Tooltip>
-                                <MenuI navigate={navigate} handleLogout={handleLogout} anchorEl={anchorEl}
-                                       handleClose={handleClose}/>
+                                <MenuHeader navigate={navigate} handleLogout={handleLogout} anchorEl={anchorEl}
+                                            handleClose={handleClose}/>
                             </Box>
                         }
-                    </Grid> :
-                    <Grid container item columnGap={2} md={4} justifyContent='flex-end'
-                          sx={{display: {xs: 'none', md: 'flex'}}}>
-                        <NavButton text='Home' path=''/>
-                        <NavButton text='About' path='about'/>
                     </Grid>
                 }
             </Toolbar>

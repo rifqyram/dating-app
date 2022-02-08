@@ -165,14 +165,13 @@ function UpdateProfileForm() {
                 city: formValue.city,
             }
 
-            console.log(data)
             updateUserProfile(data)
                 .then(() => {
                     if (image) {
                         uploadAvatar(formValue.memberId, image.currentFile)
-                            .then(r => {
-                                navigate('/profile-preference')
-                                successAlert('Success', 'Update Profile Success');
+                            .then(() => {
+                                successAlert('Success', 'Update Profile Success')
+                                    .then(() => navigate('/profile-preference'));
                             })
                             .catch(err => {
                                 console.log(err.response);
