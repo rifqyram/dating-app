@@ -17,7 +17,6 @@ import {useNavigate} from "react-router";
 function FindPartner() {
     const [partner, setPartner] = useState(null);
     const [page, setPage] = useState(0);
-    const {message} = useContext(GlobalContext);
     const navigate = useNavigate();
 
     const nextPartner = () => {
@@ -60,14 +59,14 @@ function FindPartner() {
             <Header/>
             <Grid container width='90%' mx='auto' minHeight='100vh' alignItems='flex-start'>
                 {partner &&
-                    <Grid item container>
+                    <Grid item container xs={12}>
                         <Grid item xs={12}>
                             <Typography sx={{my: {xs: 2, md: 4}}} textAlign='center' variant='h4' fontWeight='bold'
                                         color='rgba(0,0,0,0.6)'>
                                 Find your partner
                             </Typography>
                         </Grid>
-                        <Grid item container xs={12} justifyContent='center' my={4}>
+                        <Grid item container xs={12} justifyContent='center' mb={4}>
                             {partner?.map((p, idx) => {
                                 return <CardFindPartner
                                     key={idx}

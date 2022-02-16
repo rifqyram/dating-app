@@ -35,7 +35,7 @@ function ListPartner() {
                         <Grid item container columnSpacing={3}>
                             {partners && partners.map((i, idx) => {
                                 return (
-                                    <Grid sx={{my: {xs: 4}}} item md={partners.length === 1 ? 12 : 4} xs={12} key={idx}>
+                                    <Grid sx={{my: {xs: 4}}} item md={partners.length > 0 ? 12 : 4} xs={12} key={idx}>
                                         <CardListPartner data={i} isLoading={isLoading}/>
                                     </Grid>
                                 )

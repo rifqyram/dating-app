@@ -1,87 +1,25 @@
 import {Button, FormControl, Grid, InputAdornment, TextField, Typography} from "@mui/material";
 import {PasswordRounded} from "@mui/icons-material";
-import {useContext, useState} from "react";
-import {authRegister, userActivation} from "../services/AuthService";
+import {useContext} from "react";
 import {LoadingButton} from "@mui/lab";
-import {validEmail} from "../../../utils/util";
-import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
 import {GlobalContext} from "../../../context/GlobalContext";
+import {useFormik} from "formik";
+import validationSchema from "../../../shared/validation/ValidationSchema";
+
 
 function RegisterForm({setValue}) {
-    const [formValue, setFormValue] = useState({
-        email: '',
-        password: ''
-    });
-    const [error, setError] = useState({});
     const {register, isLoading} = useContext(GlobalContext);
 
-    const validationForm = (name, value) => {
-        let valid = true;
-        let message;
-
-        if (name === 'email' && !validEmail(value)) {
-            message = "Email tidak valid";
-            valid = false;
-        }
-        if (value.length === 0) {
-            message = `${name} tidak boleh kosong`;
-            valid = false
-        }
-
-        return [message, valid];
-    }
-
-    const validationOnSubmit = () => {
-        let errors = {
+    const formik = useFormik({
+        initialValues: {
             email: '',
             password: ''
-        };
-        let valid = true
-
-        if (!validEmail(formValue.email)) {
-            errors.email = 'Email tidak valid'
-            valid = false;
-
-        } else if (!formValue.email) {
-            errors.email = 'Email tidak boleh kosong'
-            valid = false;
+        },
+        validationSchema: validationSchema.authValidation,
+        onSubmit: values => {
+            register(values, setValue);
         }
-
-        if (!formValue.password) {
-            errors.password = 'Password tidak boleh kosong';
-            valid = false;
-        }
-
-        setError({...errors});
-        return valid;
-    }
-
-    const handleOnBlur = (e) => {
-        const {target: {name, value}} = e;
-        const [message, valid] = validationForm(name, value)
-
-        if (!valid) {
-            setError({...error, [name]: message})
-        }
-    }
-
-    const handleOnChange = (e) => {
-        const {target: {name, value}} = e;
-        const [message, valid] = validationForm(name, value)
-
-        setError({...error, [name]: null})
-        setFormValue({...formValue, [name]: value});
-        if (!valid) {
-            setError({...error, [name]: message});
-        }
-    }
-
-    const handleOnSubmit = (e) => {
-        e.preventDefault();
-        if (validationOnSubmit()) {
-            register({email: formValue.email, password: formValue.password}, setValue);
-        }
-    }
+    })
 
     return (
         <>
@@ -90,7 +28,7 @@ function RegisterForm({setValue}) {
                     <Typography variant='h5' color='primary'>Let's get started</Typography>
                     <Typography variant='p' color='rgba(0,0,0,0.6)'>Sign up and find your partner now</Typography>
                 </Grid>
-                <Grid item xs={12} onSubmit={handleOnSubmit} component='form'>
+                <Grid item xs={12} onSubmit={formik.handleSubmit} component='form'>
                     <FormControl fullWidth margin='dense'>
                         <TextField
                             label="Email"
@@ -98,11 +36,10 @@ function RegisterForm({setValue}) {
                             size='small'
                             name='email'
                             autoComplete='off'
-                            onChange={handleOnChange}
-                            onBlur={handleOnBlur}
-                            value={formValue.email}
-                            error={Boolean(error?.email)}
-                            helperText={error?.email}
+                            onChange={formik.handleChange}
+                            value={formik.values.email}
+                            error={formik.touched.email && Boolean(formik.errors.email)}
+                            helperText={formik.touched.email && formik.errors.email}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position='end'>
@@ -120,11 +57,10 @@ function RegisterForm({setValue}) {
                             type='password'
                             name='password'
                             autoComplete='off'
-                            onChange={handleOnChange}
-                            onBlur={handleOnBlur}
-                            value={formValue.password}
-                            error={Boolean(error?.password)}
-                            helperText={error?.password}
+                            onChange={formik.handleChange}
+                            value={formik.values.password}
+                            error={formik.touched.password && Boolean(formik.errors.password)}
+                            helperText={formik.touched.password && formik.errors.password}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position='end'>
@@ -135,7 +71,7 @@ function RegisterForm({setValue}) {
                         />
                     </FormControl>
                     {isLoading && <LoadingButton fullWidth loading variant='contained'
-                                               sx={{my: 2, borderRadius: 2}}>Submit</LoadingButton>}
+                                                 sx={{my: 2, borderRadius: 2}}>Submit</LoadingButton>}
                     {!isLoading &&
                         <Button fullWidth variant='contained' type='submit'
                                 sx={{my: 2, borderRadius: 2}}>Create new

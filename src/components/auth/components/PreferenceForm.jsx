@@ -2,15 +2,15 @@ import Header from "../../../shared/header/Header";
 import {
     Button,
     Checkbox,
-    Container,
     FormControl,
-    FormControlLabel, FormHelperText,
+    FormControlLabel,
+    FormHelperText,
     FormLabel,
     Grid,
-    InputLabel,
     Radio,
     RadioGroup,
-    TextField, Typography
+    TextField,
+    Typography
 } from "@mui/material";
 import {createPreference, getListInterest, getUserFromLocalStorage} from "../services/AuthService";
 import {useEffect, useState} from "react";
@@ -18,31 +18,48 @@ import imageForm from "../../../assets/image/image-interest-form.jpg";
 import Footer from "../../../shared/footer/Footer";
 import {useNavigate} from "react-router";
 import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
+import {useFormik} from "formik";
+import validationSchema from "../../../shared/validation/ValidationSchema";
 
 function PreferenceForm() {
-    // const [memberId, setMemberId] = useState('');
-    // const [genderInterest, setGenderInterest] = useState('M');
-    // const [domicileInterest, setDomicileInterest] = useState('');
-    // const [startAgeInterest, setStartAgeInterest] = useState('');
-    // const [endAgeInterest, setEndAgeInterest] = useState('');
-    // const [interest, setInterest] = useState([]);
-    const [formValue, setFormValue] = useState({
-        memberId: '',
-        genderInterest: 'M',
-        domicileInterest: '',
-        startAgeInterest: '',
-        endAgeInterest: '',
-        interests: []
-    });
     const [error, setError] = useState(null);
     const [interestData, setInterestData] = useState([]);
     const navigate = useNavigate();
 
+    const formik = useFormik({
+        initialValues: {
+            memberId: '',
+            genderInterest: 'M',
+            domicileInterest: '',
+            startAgeInterest: '',
+            endAgeInterest: '',
+            interests: []
+        },
+        validationSchema: validationSchema.profilePreferenceValidation,
+        onSubmit: values => {
+            if (getUserFromLocalStorage() === null) return;
+
+            const data = {
+                ...values,
+                memberId: getUserFromLocalStorage().memberId
+            }
+
+            createPreference(data)
+                .then(response => {
+                    successAlert('Success', 'Your preference has been created');
+                    navigate('/');
+                })
+                .catch(error => {
+                    errorAlert('Error', 'Your preference has not been created');
+                });
+        }
+    });
+
     const handleChangeInterest = (e) => {
         setError({...error, interests: ''})
 
-        let newArray = [...formValue.interests, {interestId: e.target.id}]
-        const find = formValue.interests.find(element => e.target.id === element.interestId);
+        let newArray = [formik.values.interests, {interestId: e.target.id}]
+        const find = formik.values.interests.find(element => e.target.id === element.interestId);
 
         if (find) {
             newArray = newArray.filter((data) => data.interestId !== e.target.id);
@@ -52,110 +69,15 @@ function PreferenceForm() {
             setError({...error, interests: 'Pilih minimal 1'})
         }
 
-        setFormValue({...formValue, interests: newArray});
+        formik.setFieldValue('interests', newArray);
     }
-    const validationOnSubmit = () => {
-        let errors = {
-            domisileInterest: '',
-            startAgeInterest: '',
-            endAgeInterest: '',
-            interests: ''
-        };
-        let valid = true;
-
-        if (!formValue.domicileInterest) {
-            valid = false;
-            errors.domisileInterest = 'Domisili tidak boleh kosong'
-        }
-
-        if (!formValue.startAgeInterest) {
-            valid = false;
-            errors.startAgeInterest = 'Range Umur tidak boleh kosong'
-        }
-
-        if (!formValue.endAgeInterest) {
-            valid = false;
-            errors.endAgeInterest = 'Range Umur tidak boleh kosong'
-        }
-
-        if (formValue.interests.length === 0) {
-            valid = false;
-            errors.interests = 'Pilih minimal 1'
-        }
-
-        setError({...errors});
-        return valid;
-    }
-
-    const formValidation = (name, value) => {
-        let valid = true;
-        let message;
-
-        if (!value) {
-            valid = false;
-            message = `${name} tidak boleh kosong`;
-        }
-
-        return [valid, message];
-    }
-
-    const handleOnBlur = (e) => {
-        const {target: {name, value}} = e
-        const [valid, message] = formValidation(name, value);
-
-        if (!valid) {
-            setError({...error, [name]: message});
-        }
-
-    }
-
-    const handleOnChange = (e) => {
-        const {target: {name, value}} = e;
-        setFormValue({...formValue, [name]: value});
-        const [valid, message] = formValidation(name, value);
-
-        if (!valid) {
-            setError({...error, [name]: message})
-        }
-    }
-
-    function handleSubmit(e) {
-        e.preventDefault();
-        validationOnSubmit();
-
-        if (validationOnSubmit()) {
-            const data = {
-                memberId: formValue.memberId,
-                genderInterest: formValue.genderInterest,
-                domicileInterest: formValue.domicileInterest,
-                startAgeInterest: parseInt(formValue.startAgeInterest),
-                endAgeInterest: parseInt(formValue.endAgeInterest),
-                interests: formValue.interests
-            }
-
-            createPreference(data)
-                .then((r) => {
-                    successAlert('Success Update Preference', r.message);
-                    navigate('/find');
-                })
-                .catch((err) => {
-                    errorAlert(err.response.data.ErrorDescription.message);
-                })
-        }
-
-    }
-
-    useEffect(() => {
-        if (getUserFromLocalStorage() !== null) {
-            setFormValue({...formValue, memberId: getUserFromLocalStorage().memberId});
-        }
-    }, []);
 
     useEffect(() => {
         getListInterest()
             .then(r => {
                 setInterestData(r.data)
             })
+            .catch((err) => console.log(err))
     }, [])
 
     return (
@@ -165,15 +87,14 @@ function PreferenceForm() {
                 <Grid item md={8} sx={{display: {xs: 'none', md: 'block'}}}>
                     <img width='100%' src={imageForm} loading="lazy" aria-hidden alt={'image-form'}/>
                 </Grid>
-                <Grid item md={4} xs={12} component='form' onSubmit={handleSubmit}>
+                <Grid item md={4} xs={12} component='form' onSubmit={formik.handleSubmit}>
                     <Typography variant='h5' color='primary' textAlign='center'>My Preference</Typography>
                     <FormControl fullWidth margin='dense'>
                         <FormLabel id="genderInterest">Interest to</FormLabel>
                         <RadioGroup
                             aria-labelledby="genderInterest"
-                            value={formValue.genderInterest}
-                            onChange={handleOnChange}
-                            onBlur={handleOnBlur}
+                            value={formik.values.genderInterest}
+                            onChange={formik.handleChange}
                             row
                             name="genderInterest">
                             <FormControlLabel
@@ -191,11 +112,11 @@ function PreferenceForm() {
                             variant='outlined'
                             label='Domicile'
                             name='domicileInterest'
-                            error={Boolean(error?.domisileInterest)}
-                            helperText={error?.domisileInterest ? error?.domisileInterest : 'Domisili untuk pencarian partner anda'}
-                            onChange={handleOnChange}
-                            onBlur={handleOnBlur}
-                            value={formValue.domicileInterest}
+                            autoComplete='off'
+                            error={formik.touched.domicileInterest && Boolean(formik.errors.domicileInterest)}
+                            helperText={formik.touched.domicileInterest && formik.errors.domicileInterest ? formik.errors.domicileInterest : 'Domisili untuk pencarian partner anda'}
+                            value={formik.values.domicileInterest}
+                            onChange={formik.handleChange}
                             size='small'/>
                     </FormControl>
                     <Grid container spacing={2}>
@@ -206,11 +127,11 @@ function PreferenceForm() {
                                            size='small'
                                            type='number'
                                            name='startAgeInterest'
-                                           error={Boolean(error?.startAgeInterest)}
-                                           helperText={error?.startAgeInterest ? error?.startAgeInterest : 'Tertarik pada umur minimal 17 tahun'}
-                                           value={formValue.startAgeInterest}
-                                           onBlur={handleOnBlur}
-                                           onChange={handleOnChange}/>
+                                           autoComplete='off'
+                                           error={formik.touched.startAgeInterest && Boolean(formik.errors.startAgeInterest)}
+                                           helperText={formik.touched.startAgeInterest && formik.errors.startAgeInterest ? formik.errors.startAgeInterest : 'Minimal umur 18 tahun'}
+                                           value={formik.values.startAgeInterest}
+                                           onChange={formik.handleChange}/>
                             </FormControl>
                         </Grid>
                         <Grid item xs={6}>
@@ -220,11 +141,11 @@ function PreferenceForm() {
                                            size='small'
                                            type='number'
                                            name='endAgeInterest'
-                                           value={formValue.endAgeInterest}
-                                           onChange={handleOnChange}
-                                           onBlur={handleOnBlur}
-                                           error={Boolean(error?.endAgeInterest)}
-                                           helperText={error?.endAgeInterest ? error?.endAgeInterest : 'Tertarik pada umur maksimal 40 tahun'}/>
+                                           autoComplete='off'
+                                           error={formik.touched.endAgeInterest && Boolean(formik.errors.endAgeInterest)}
+                                           helperText={formik.touched.endAgeInterest && formik.errors.endAgeInterest ? formik.errors.endAgeInterest : 'Maksimal umur 40 tahun'}
+                                           value={formik.values.endAgeInterest}
+                                           onChange={formik.handleChange}/>
                             </FormControl>
                         </Grid>
                     </Grid>

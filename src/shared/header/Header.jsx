@@ -59,7 +59,7 @@ function Header() {
                                     <IconButton size='large' onClick={handleMenu}>
                                         <Avatar
                                             alt={user?.userData?.PersonalInfo?.Name}
-                                            src={`data:image;base64,${user?.userData?.PersonalInfo?.RecentPhotoPath}`}/>
+                                            src={user?.userData?.PersonalInfo?.RecentPhotoPath && `data:image;base64,${user?.userData?.PersonalInfo?.RecentPhotoPath}`}/>
                                     </IconButton>
                                 </Tooltip>
                                 <MenuHeader navigate={navigate} handleLogout={handleLogout} anchorEl={anchorEl}

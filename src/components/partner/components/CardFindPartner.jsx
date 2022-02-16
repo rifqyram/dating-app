@@ -25,7 +25,7 @@ function CardFindPartner({data, handleMatchPartner, nextPartner}) {
             <CardMedia
                 component='img'
                 image={`data:image;base64,${data.RecentPhotoPath}`}
-                sx={{height: {xs: 500, md: 800}}}
+                sx={{height: {xs: 600, md: 800}}}
                 alt='name'/>
             <Grid px={4} item sx={{
                 position: 'absolute',

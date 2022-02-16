@@ -1,103 +1,38 @@
 import {Button, FormControl, Grid, InputAdornment, TextField, Typography} from "@mui/material";
 import {AccountCircleRounded, PasswordRounded} from "@mui/icons-material";
-import {useContext, useState} from "react";
+import {useContext} from "react";
 import {LoadingButton} from "@mui/lab";
-import {validEmail} from "../../../utils/util";
 import {useNavigate} from "react-router";
 import {GlobalContext} from "../../../context/GlobalContext";
+import {useFormik} from "formik";
+import validationSchema from "../../../shared/validation/ValidationSchema";
 
 function LoginForm({setValue}) {
-
-    const [formValue, setFormValue] = useState({
-        email: '',
-        password: ''
-    });
-    const [error, setError] = useState({});
     const navigate = useNavigate();
     const {login, isLoading} = useContext(GlobalContext);
 
-    const validationForm = (name, value) => {
-        let valid = true;
-        let message;
-
-        if (name === 'email' && !validEmail(value)) {
-            message = "Email tidak valid";
-            valid = false;
-        }
-        if (value.length === 0) {
-            message = `${name} tidak boleh kosong`;
-            valid = false
-        }
-
-        return [message, valid];
-    }
-
-    const validationOnSubmit = () => {
-        let errors = {
+    const formik = useFormik({
+        initialValues: {
             email: '',
             password: ''
-        };
-        let valid = true
-
-        if (!validEmail(formValue.email)) {
-            errors.email = 'Email tidak valid'
-            valid = false;
-
-        } else if (!formValue.email) {
-            errors.email = 'Email tidak boleh kosong'
-            valid = false;
+        },
+        validationSchema: validationSchema.authValidation,
+        onSubmit: (values) => {
+            login({userName: values.email, password: values.password}, navigate)
         }
-
-        if (!formValue.password) {
-            errors.password = 'Password tidak boleh kosong';
-            valid = false;
-        }
-
-        setError({...errors});
-        return valid;
-    }
-
-    const handleOnBlur = (e) => {
-        const {target: {name, value}} = e;
-        const [message, valid] = validationForm(name, value)
-
-        if (!valid) {
-            setError({...error, [name]: message})
-        }
-    }
-
-    const handleOnChange = (e) => {
-        const {target: {name, value}} = e;
-        const [message, valid] = validationForm(name, value)
-
-        setError({...error, [name]: null})
-        setFormValue({...formValue, [name]: value});
-        if (!valid) {
-            setError({...error, [name]: message});
-        }
-    }
-
-    const handleOnSubmit = (e) => {
-        e.preventDefault();
-
-        if (validationOnSubmit()) {
-            login({
-                userName: formValue.email,
-                password: formValue.password
-            }, navigate)
-        }
-    }
+    })
 
     return (
         <>
             <Grid container>
                 <Grid item xs={12}>
                     <Typography variant='h5' color='primary'>Log in</Typography>
-                    <Typography variant='p' color='rgba(0,0,0,0.6)'>Enter your credential to access your account</Typography>
+                    <Typography variant='p' color='rgba(0,0,0,0.6)'>Enter your credential to access your
+                        account</Typography>
                 </Grid>
                 <Grid item xs={12}
                       component='form'
-                      onSubmit={handleOnSubmit}>
+                      onSubmit={formik.handleSubmit}>
                     <FormControl fullWidth margin='dense'>
                         <TextField
                             label="Email"
@@ -105,11 +40,11 @@ function LoginForm({setValue}) {
                             size='small'
                             autoComplete='off'
                             name='email'
-                            onBlur={handleOnBlur}
-                            onChange={handleOnChange}
-                            error={Boolean(error?.email)}
-                            helperText={error?.email}
-                            value={formValue.email}
+                            id='email'
+                            onChange={formik.handleChange}
+                            error={formik.touched.email && Boolean(formik.errors.email)}
+                            helperText={formik.touched.email && formik.errors.email}
+                            value={formik.values.email}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position='end'>
@@ -127,11 +62,10 @@ function LoginForm({setValue}) {
                             type='password'
                             name='password'
                             autoComplete='off'
-                            onBlur={handleOnBlur}
-                            value={formValue.password}
-                            onChange={handleOnChange}
-                            error={Boolean(error?.password)}
-                            helperText={error?.password}
+                            onChange={formik.handleChange}
+                            error={formik.touched.password && Boolean(formik.errors.password)}
+                            helperText={formik.touched.password && formik.errors.password}
+                            value={formik.values.password}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position='end'>
@@ -154,7 +88,8 @@ function LoginForm({setValue}) {
                             type='submit'
                             sx={{my: 2, borderRadius: 2}}>Sign in</Button>}
                     <Typography variant='p' color='rgba(0,0,0,0.6)'>Don't have any account?
-                        <Typography variant='p' sx={{'&:hover': {color: '#E60965', cursor: 'pointer'}}} color='rgba(0,0,0,0.6)' onClick={() => setValue('1')}> Register</Typography>
+                        <Typography variant='p' sx={{'&:hover': {color: '#E60965', cursor: 'pointer'}}}
+                                    color='rgba(0,0,0,0.6)' onClick={() => setValue('1')}> Register</Typography>
                     </Typography>
                 </Grid>
             </Grid>

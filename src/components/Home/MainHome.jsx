@@ -12,9 +12,8 @@ function MainHome() {
     const [value, setValue] = useState('1');
     const [start, setStart] = useState(false);
 
-
     return (
-        <Grid container width='90%' mx='auto' minHeight='80vh' sx={{mt: {xs: 4, md: 12}}} >
+        <Grid container width='90%' mx='auto' sx={{mt: {xs: 4, md: 12}, minHeight: {md: '100vh'}}}>
             <Grid item md={4} xs={12} >
                 <Typography variant='h3' color='rgba(0,0,0,0.6)' fontWeight='bold'>Find your life partner with a
                     simple way</Typography>
@@ -34,7 +33,7 @@ function MainHome() {
                     </TabContext>
                 }
             </Grid>
-            <Grid container item md={8} xs={12} sx={{justifyContent: {md: 'flex-end', xs: 'center'}}}>
+            <Grid container item md={8} xs={12} sx={{justifyContent: {md: 'flex-end', xs: 'center'}, my: {xs: 8, md: 0}}}>
                 <Box sx={{width: {xs: '100%', md: '90%'}}}>
                     <img width='100%' style={{objectFit: 'contain'}} src={bgImageHome} aria-hidden alt='bg-home'/>
                 </Box>

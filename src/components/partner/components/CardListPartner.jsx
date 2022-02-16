@@ -5,6 +5,7 @@ import {useState} from "react";
 import ProfilePartner from "./ProfilePartner";
 import {getProfile} from "../../auth/services/AuthService";
 import {Skeleton} from "@mui/material";
+import {errorAlert} from "../../../shared/notification/SweetAlert";
 
 function CardListPartner({data, isLoading}) {
     const [open, setOpen] = useState(false);
@@ -17,12 +18,15 @@ function CardListPartner({data, isLoading}) {
             .then((res) => {
                 setPartner(res.data);
             })
+            .catch((err) => {
+                errorAlert(err);
+            })
     }
 
     const loadingComp =
-        <Grid container width={500}>
-            <Skeleton variant="rectangular" width={500} height={600}/>
-            <Grid container item justifyContent='space-between'>
+        <Grid container width='100%'>
+            <Skeleton variant="rectangular" width={600} height={600}/>
+            <Grid item justifyContent='space-between'>
                 <Skeleton variant="text" width={200}/>
                 <Skeleton variant="text" width={200}/>
             </Grid>

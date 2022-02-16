@@ -1,9 +1,14 @@
+import {useState} from "react";
+import {useNavigate} from "react-router";
+import {useFormik} from "formik";
+
 import {
     Button,
     FormControl,
-    FormControlLabel, FormHelperText,
+    FormControlLabel,
+    FormHelperText,
     FormLabel,
-    Grid,
+    Grid, IconButton,
     Radio,
     RadioGroup,
     TextField,
@@ -11,199 +16,98 @@ import {
 } from "@mui/material";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/lab";
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import {useEffect, useState} from "react";
-import {dateFormat} from "../../../shared/date-format";
+import {DeleteOutline, PhotoCamera} from "@mui/icons-material";
 import {getUserFromLocalStorage, updateUserProfile, uploadAvatar} from "../services/AuthService";
-import Header from "../../../shared/header/Header";
-import {PhotoCamera} from "@mui/icons-material";
-import Footer from "../../../shared/footer/Footer";
 import styled from "@emotion/styled";
-import {checkObjectValueIsEmpty, validPhoneNumber} from "../../../utils/util";
+
 import {errorAlert, successAlert} from "../../../shared/notification/SweetAlert";
-import {useNavigate} from "react-router";
+import validationSchema from "../../../shared/validation/ValidationSchema";
+import Header from "../../../shared/header/Header";
+import Footer from "../../../shared/footer/Footer";
+import {dateFormat} from "../../../utils/util";
 
 const Input = styled('input')({
     display: 'none',
 });
 
 function UpdateProfileForm() {
-
-    const [formValue, setFormValue] = useState({
-        memberId: '',
-        name: '',
-        mobilePhone: '',
-        address: '',
-        city: '',
-        gender: 'M',
-        biodata: '',
-        instagram: '',
-        twitter: '',
-    });
     const [error, setError] = useState({});
-    const [dob, setDob] = useState(null);
     const [image, setImage] = useState({
         currentFile: null,
         previewImage: null,
     });
     const navigate = useNavigate();
 
-
-    const validationOnSubmit = () => {
-        let errors = {
+    const formik = useFormik({
+        initialValues: {
+            memberId: '',
             name: '',
             mobilePhone: '',
+            bod: null,
+            address: '',
             city: '',
-            biodata: '',
-            image: '',
-        };
-        let valid = true;
-
-        if (!formValue.name) {
-            valid = false;
-            errors.name = 'Nama tidak boleh kosong'
-        }
-
-        if (!formValue.mobilePhone) {
-            valid = false;
-            errors.mobilePhone = 'Nomor Hp tidak boleh kosong'
-        }
-
-        if (!formValue.city) {
-            valid = false;
-            errors.city = 'Kota tidak boleh kosong'
-        }
-
-        if (!dob) {
-            valid = false;
-            errors.dob = 'Tanggal lahir tidak boleh kosong'
-        }
-
-        if (!formValue.biodata) {
-            valid = false;
-            errors.biodata = 'Biodata tidak boleh kosong'
-        }
-
-        if (!image.currentFile) {
-            valid = false;
-            errors.image = 'Avatar tidak boleh kosong'
-        }
-
-        setError({...errors});
-        return valid;
-    }
-
-    const formValidation = (name, value) => {
-        let valid = true;
-        let message;
-
-        if (!value) {
-            valid = false;
-            message = "Field tidak boleh kosong";
-        }
-
-        if (name === 'mobilePhone' && !validPhoneNumber(value)) {
-            valid = false;
-            message = "Nomor Hp tidak valid";
-        }
-
-        return [valid, message];
-    }
-
-    const handleBlur = (e) => {
-        const {target: {name, value}} = e;
-        const [valid, message] = formValidation(name, value);
-
-        if (!valid) {
-            setError({...error, [name]: message})
-        }
-    }
-
-    const handleUpload = (e) => {
-        if (e.target.files.length > 0) {
-            setError({...error, image: null})
-
-            const fsize = e.target.files[0].size;
-            const file = Math.round((fsize / 1024));
-            if (file >= 1024) {
-                setError({...error, image: 'Maksimum upload gambar 1mb'})
-            } else {
-                setImage({
-                    currentFile: e.target.files[0],
-                    previewImage: URL.createObjectURL(e.target.files[0])
-                });
+            gender: 'M',
+            bio: '',
+            instagram: '',
+            twitter: '',
+        },
+        validationSchema: validationSchema.updateProfileValidation,
+        onSubmit: values => {
+            if (image.currentFile === null) {
+                setError({...error, image: 'Avatar tidak boleh kosong'})
+                return;
             }
 
-        }
-    }
-
-    const handleOnChange = (e) => {
-        const {target: {name, value}} = e;
-        setFormValue({...formValue, [name]: value});
-        setError({...error, [name]: null});
-
-        const [valid, message] = formValidation(name, value);
-        if (!valid) {
-            setError({...error, [name]: message})
-        }
-    }
-
-    const handleOnSubmit = (e) => {
-        e.preventDefault();
-        validationOnSubmit();
-
-        if (validationOnSubmit()) {
             const data = {
-                memberId: formValue.memberId,
-                name: formValue.name,
-                bod: dateFormat(dob),
-                gender: formValue.gender,
-                selfDescription: formValue.biodata,
-                instagram: formValue.instagram,
-                twitter: formValue.twitter,
-                mobilePhone: formValue.mobilePhone,
-                address: formValue.address,
-                city: formValue.city,
+                ...values,
+                memberId: getUserFromLocalStorage().memberId,
+                selfDescription: values.bio,
+                bod: dateFormat(values.bod),
             }
 
             updateUserProfile(data)
                 .then(() => {
-                    if (image) {
-                        uploadAvatar(formValue.memberId, image.currentFile)
-                            .then(() => {
-                                successAlert('Success', 'Update Profile Success')
-                                    .then(() => navigate('/profile-preference'));
-                            })
-                            .catch(err => {
-                                console.log(err.response);
-                                errorAlert(err.response.data.ErrorDescription.message)
-                            })
-                    }
+                    uploadAvatar(data.memberId, image.currentFile)
+                        .then(() => {
+                            successAlert('Success', 'Update Profile Success')
+                                .then(() => navigate('/profile-preference'));
+                        })
+                        .catch(err => {
+                            errorAlert(err)
+                        })
                 })
                 .catch(err => {
-                    errorAlert(err.response.data.ErrorDescription.message)
+                    errorAlert(err)
                 })
         }
+    });
 
-        // updateUserProfile(data)
-        //     .then(r => {
-        //         console.log(r)
-        //     })
-        //     .catch(err => console.log(err));
+    const handleUpload = (e) => {
+        if (e.target.files.length === 0) return;
+
+        setError({...error, image: null})
+        const fileSize = e.target.files[0].size;
+        const file = Math.round((fileSize / 1024));
+
+        if (file >= 1024) {
+            setError({...error, image: 'Maksimum upload gambar 1mb'})
+        } else {
+            setImage({
+                currentFile: e.target.files[0],
+                previewImage: URL.createObjectURL(e.target.files[0])
+            });
+        }
     }
-
-    useEffect(() => {
-        setFormValue({
-            ...formValue, memberId: getUserFromLocalStorage().memberId
-        })
-    }, []);
 
     return (
         <>
             <Header/>
-            <Grid width='90%' minHeight='90vh' mx='auto'>
-                <Typography variant='h4' my={4} color='primary'>Update Profile Kamu</Typography>
-                <Grid container spacing={3} component='form' onSubmit={handleOnSubmit}>
-                    <Grid container item md={4} xs={12} display='flex' alignItems='center' direction='column'>
+            <Grid container width='90%' minHeight='100vh' alignContent="flex-start" mx='auto'>
+                <Grid item xs={12} my={4}>
+                    <Typography variant='h4' color='primary' align='center'>Update Profile</Typography>
+                </Grid>
+                <Grid item container xs={12} spacing={3} mt={4} component='form' onSubmit={formik.handleSubmit}>
+                    <Grid container item md={4} xs={12} alignItems='center' direction='column'>
                         {image.previewImage ?
                             <img width='300' height='300' style={{borderRadius: '50%', objectFit: 'cover'}}
                                  src={image.previewImage}
@@ -213,7 +117,11 @@ function UpdateProfileForm() {
                                  aria-hidden alt=''/>
                         }
                         <label htmlFor="contained-button-file">
-                            <Input onChange={handleUpload} accept="image/*" id="contained-button-file" type="file"/>
+                            <Input
+                                onChange={handleUpload}
+                                accept="image/*"
+                                id="contained-button-file"
+                                type="file"/>
                             <Button sx={{mt: 1}} variant="contained" component="span">
                                 <PhotoCamera sx={{mr: 1}}/> Choose Avatar
                             </Button>
@@ -228,12 +136,12 @@ function UpdateProfileForm() {
                                 variant='outlined'
                                 size='small'
                                 name='name'
-                                onBlur={handleBlur}
+                                id='name'
                                 autoComplete='off'
-                                error={Boolean(error?.name)}
-                                helperText={error?.name ? error?.name : "Nama tidak bisa diubah setelah disubmit"}
-                                value={formValue.name}
-                                onChange={handleOnChange}
+                                error={formik.touched.name && Boolean(formik.errors.name)}
+                                helperText={formik.touched.name && formik.errors.name ? formik.errors.name : 'Nama tidak bisa diubah setelah disubmit'}
+                                value={formik.values.name}
+                                onChange={formik.handleChange}
                             />
                         </FormControl>
                         <FormControl margin='dense' fullWidth autoComplete='off'>
@@ -242,27 +150,28 @@ function UpdateProfileForm() {
                                 variant='outlined'
                                 size='small'
                                 name='mobilePhone'
+                                id='mobilePhone'
                                 autoComplete='off'
-                                onBlur={handleBlur}
-                                error={Boolean(error?.mobilePhone)}
-                                helperText={error?.mobilePhone ? error?.mobilePhone : "No Handphone: Contoh: 0812xxxxxxx"}
-                                value={formValue.mobilePhone}
-                                onChange={handleOnChange}
+                                error={formik.touched.mobilePhone && Boolean(formik.errors.mobilePhone)}
+                                helperText={formik.touched.mobilePhone && formik.errors.mobilePhone ? formik.errors.mobilePhone : 'No Handphone: Contoh: 0812xxxxxxx'}
+                                value={formik.values.mobilePhone}
+                                onChange={formik.handleChange}
                             />
                         </FormControl>
                         <FormControl margin='dense' fullWidth autoComplete='off'>
                             <LocalizationProvider dateAdapter={AdapterDateFns}>
                                 <DesktopDatePicker
                                     label="Birthdate"
-                                    value={dob}
+                                    value={formik.values.bod}
                                     disableFuture
-                                    onChange={(e) => {
-                                        setDob(e)
-                                        setError({...error, dob: ''})
-                                    }}
-                                    renderInput={(params) => <TextField {...params} size='small'
-                                                                        error={Boolean(error?.dob)}
-                                                                        helperText={error?.dob ? error?.dob : "Tanggal Lahir Anda"}/>}/>
+                                    onChange={(date) => formik.setFieldValue('bod', date)}
+                                    renderInput={(params) => <TextField
+                                        {...params}
+                                        size='small'
+                                        name='bod'
+                                        id='bod'
+                                        error={formik.touched.dob && Boolean(formik.errors.bod)}
+                                        helperText={formik.touched.dob && formik.errors.bod ? formik.errors.bod : 'Tanggal Lahir harus minimal 18 tahun'}/>}/>
                             </LocalizationProvider>
                         </FormControl>
                         <FormControl margin='dense' fullWidth>
@@ -270,15 +179,15 @@ function UpdateProfileForm() {
                                 label='Address'
                                 variant='outlined'
                                 size='small'
-                                onBlur={handleBlur}
                                 name='address'
+                                id='address'
                                 multiline
                                 maxRows={4}
                                 minRows={4}
-                                error={Boolean(error?.address)}
-                                helperText={error?.address ? error?.address : "Alamat Anda"}
-                                value={formValue.address}
-                                onChange={handleOnChange}
+                                error={formik.touched.address && Boolean(formik.errors.address)}
+                                helperText={formik.touched.address && formik.errors.address ? formik.errors.address : 'Alamat Anda'}
+                                value={formik.values.address}
+                                onChange={formik.handleChange}
                             />
                         </FormControl>
                         <FormControl margin='dense' fullWidth>
@@ -286,12 +195,12 @@ function UpdateProfileForm() {
                                 label='City'
                                 variant='outlined'
                                 size='small'
-                                onBlur={handleBlur}
                                 name='city'
-                                error={Boolean(error?.city)}
-                                helperText={error?.city ? error?.city : "Kota tempat tinggal Anda"}
-                                value={formValue.city}
-                                onChange={handleOnChange}
+                                id='city'
+                                error={formik.touched.city && Boolean(formik.errors.city)}
+                                helperText={formik.touched.city && formik.errors.city ? formik.errors.city : 'Kota tempat tinggal Anda'}
+                                value={formik.values.city}
+                                onChange={formik.handleChange}
                             />
                         </FormControl>
                         <FormControl
@@ -301,8 +210,9 @@ function UpdateProfileForm() {
                             <RadioGroup
                                 row
                                 aria-labelledby="gender"
-                                value={formValue.gender}
-                                onChange={handleOnChange}
+                                value={formik.values.gender}
+                                onChange={formik.handleChange}
+                                id='gender'
                                 name="gender">
                                 <FormControlLabel
                                     value="M"
@@ -322,14 +232,14 @@ function UpdateProfileForm() {
                             fullWidth>
                             <TextField
                                 multiline
-                                label='Biodata'
+                                label='Bio'
                                 size='small'
-                                name='biodata'
-                                onBlur={handleBlur}
-                                error={Boolean(error?.biodata)}
-                                helperText={error?.biodata ? error?.biodata : "Biodata, ceritakan tentang diri anda"}
-                                value={formValue.biodata}
-                                onChange={handleOnChange}
+                                name='bio'
+                                id='bio'
+                                error={formik.touched.bio && Boolean(formik.errors.bio)}
+                                helperText={formik.touched.bio && formik.errors.bio ? formik.errors.bio : 'Bio, ceritakan tentang diri anda'}
+                                value={formik.values.bio}
+                                onChange={formik.handleChange}
                                 minRows={5}
                                 maxRows={5}/>
                         </FormControl>
@@ -338,9 +248,10 @@ function UpdateProfileForm() {
                                 label='Instagram'
                                 variant='outlined'
                                 name='instagram'
+                                id='instagram'
                                 helperText={"Akun Instagram Anda"}
-                                value={formValue.instagram}
-                                onChange={handleOnChange}
+                                value={formik.values.instagram}
+                                onChange={formik.handleChange}
                                 size='small'/>
                         </FormControl>
                         <FormControl margin='dense' fullWidth>
@@ -348,9 +259,10 @@ function UpdateProfileForm() {
                                 label='Twitter'
                                 variant='outlined'
                                 name='twitter'
+                                id='twitter'
                                 helperText={"Akun Twitter Anda"}
-                                value={formValue.twitter}
-                                onChange={handleOnChange}
+                                value={formik.values.twitter}
+                                onChange={formik.handleChange}
                                 size='small'/>
                         </FormControl>
                         <Button variant='outlined' size='large'
